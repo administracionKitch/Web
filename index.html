@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kitch — Inteligencia Operativa para Hostelería</title>
+<meta name="description" content="Kitch digitaliza tus albaranes, actualiza tus escandallos en tiempo real y te libera del papeleo para que te centres en lo que importa."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Lighter warm palette — like afternoon light in a good restaurant */
+  --bg0:#2E1F0F;
+  --bg1:#3A2614;
+  --bg2:#432C18;
+  --bg3:#4E341E;
+  --ember:#D4692E;
+  --ember2:#E07A40;
+  --gold:#D4982E;
+  --gold2:#E8B040;
+  --cream:#F5EDD8;
+  --cream2:#EDE0C0;
+  --muted:rgba(245,237,216,0.55);
+  --muted2:rgba(245,237,216,0.3);
+  --bdr:rgba(212,152,46,0.22);
+  --bdr2:rgba(212,152,46,0.12);
+  --bdr3:rgba(212,152,46,0.06);
+  --ff:'Playfair Display',Georgia,serif;
+  --fb:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg0);color:var(--cream);font-family:var(--fb);font-size:16px;line-height:1.7;overflow-x:hidden}
+
+#cg{position:fixed;width:700px;height:700px;background:radial-gradient(circle,rgba(212,105,46,.05) 0%,transparent 68%);border-radius:50%;pointer-events:none;z-index:0;transform:translate(-50%,-50%);transition:left .12s linear,top .12s linear}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1.5rem 5vw;border-bottom:1px solid transparent;transition:all .4s}
+nav.sc{background:rgba(46,31,15,.92);backdrop-filter:blur(20px);border-color:var(--bdr2)}
+.nlogo{font-family:var(--ff);font-size:1.75rem;font-weight:500;color:var(--cream);text-decoration:none;letter-spacing:.02em}
+.nlogo-dot{color:var(--ember)}
+.nlinks{display:flex;gap:2.5rem;align-items:center}
+.nlinks a{font-size:.82rem;font-weight:400;color:var(--muted);text-decoration:none;letter-spacing:.05em;transition:color .2s}
+.nlinks a:hover{color:var(--cream)}
+.ncta{background:var(--ember)!important;color:var(--cream)!important;padding:.6rem 1.6rem!important;border-radius:2px;font-size:.78rem!important;font-weight:600!important;letter-spacing:.09em!important;text-transform:uppercase;transition:background .25s!important}
+.ncta:hover{background:var(--ember2)!important}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:0 5vw;overflow:hidden}
+#hcanvas{position:absolute;inset:0;width:100%;height:100%}
+.hvig{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse 70% 70% at 50% 50%,transparent 28%,var(--bg0) 100%),linear-gradient(to bottom,transparent 60%,var(--bg0) 100%)}
+.hgrain{position:absolute;inset:0;z-index:3;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");opacity:.45}
+.hcontent{position:relative;z-index:10;max-width:860px}
+
+.htag{display:inline-flex;align-items:center;gap:.6rem;background:rgba(212,152,46,.12);border:1px solid rgba(212,152,46,.22);border-radius:20px;padding:.35rem 1rem;font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:2rem;opacity:0;animation:fup .9s ease .1s forwards}
+
+.htitle{font-family:var(--ff);font-size:clamp(3rem,7.5vw,6.8rem);font-weight:700;line-height:1.02;color:var(--cream);margin-bottom:1.5rem;opacity:0;animation:fup .9s ease .25s forwards}
+.htitle em{font-style:italic;color:var(--ember);font-weight:400}
+
+.hpain{font-size:clamp(1.05rem,2vw,1.25rem);font-weight:300;color:var(--muted);max-width:560px;line-height:1.8;margin-bottom:2.5rem;opacity:0;animation:fup .9s ease .4s forwards}
+.hpain strong{color:var(--cream);font-weight:500}
+
+.hactions{display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;opacity:0;animation:fup .9s ease .55s forwards}
+.btnp{position:relative;overflow:hidden;background:var(--ember);color:var(--cream);padding:1.15rem 2.75rem;border:none;border-radius:2px;font-family:var(--fb);font-size:.9rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-block;transition:background .3s,transform .2s}
+.btnp::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.08) 50%,transparent 70%);transform:translateX(-100%);transition:transform .5s}
+.btnp:hover{background:var(--ember2);transform:translateY(-2px)}
+.btnp:hover::after{transform:translateX(100%)}
+.btng{font-size:.875rem;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.6rem;transition:color .2s;background:none;border:none;cursor:pointer;font-family:var(--fb)}
+.btng:hover{color:var(--cream)}
+.btng-arr{width:28px;height:28px;border:1px solid var(--bdr2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:border-color .2s,transform .2s}
+.btng:hover .btng-arr{border-color:var(--bdr);transform:translateX(3px)}
+
+.hproof{display:flex;gap:2rem;align-items:center;margin-top:3rem;opacity:0;animation:fup .9s ease .7s forwards;flex-wrap:wrap}
+.hproof-item{display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted)}
+.hproof-dot{width:6px;height:6px;border-radius:50%;background:var(--ember);flex-shrink:0}
+.hproof-div{width:1px;height:16px;background:var(--bdr2)}
+
+.hfloat{position:absolute;right:5%;top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:1px;opacity:0;animation:fleft 1.1s ease .85s forwards}
+.hfi{padding:1.4rem 1.8rem;min-width:182px;background:rgba(58,38,20,.8);border:1px solid var(--bdr2);backdrop-filter:blur(14px)}
+.hfi:not(:last-child){border-bottom:none}
+.hfv{font-family:var(--ff);font-size:2.4rem;font-weight:400;color:var(--ember);line-height:1}
+.hfl{font-size:.72rem;font-weight:300;color:var(--muted);margin-top:.3rem}
+
+.hscroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);z-index:10;display:flex;flex-direction:column;align-items:center;gap:.5rem;opacity:0;animation:fin 1s ease 1.5s forwards}
+.hscroll span{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.hscroll-line{width:1px;height:40px;background:linear-gradient(to bottom,var(--muted),transparent);animation:spulse 2.2s ease infinite}
+
+/* SECTIONS */
+section{padding:8rem 5vw;position:relative}
+.slabel{font-size:.68rem;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:.7rem;margin-bottom:1.2rem}
+.slabel::before{content:'';width:28px;height:1px;background:var(--gold);opacity:.5}
+.stitle{font-family:var(--ff);font-size:clamp(2.2rem,4.8vw,4rem);font-weight:700;line-height:1.06;color:var(--cream);max-width:720px}
+.stitle em{font-style:italic;color:var(--ember);font-weight:400}
+.sdesc{font-size:1rem;font-weight:300;color:var(--muted);max-width:520px;margin-top:1.25rem;line-height:1.8}
+
+/* PROBLEMA */
+.problema{background:var(--bg1)}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr3);margin-top:4rem;border:1px solid var(--bdr3)}
+.pcell{background:var(--bg1);padding:3rem 2.5rem;position:relative;overflow:hidden;transition:background .35s}
+.pcell::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(212,105,46,.06) 0%,transparent 70%);opacity:0;transition:opacity .4s}
+.pcell:hover{background:var(--bg2)}
+.pcell:hover::after{opacity:1}
+.pnum{font-family:var(--ff);font-size:4.5rem;font-weight:700;color:rgba(212,105,46,.12);line-height:1;margin-bottom:1.25rem;transition:color .4s}
+.pcell:hover .pnum{color:rgba(212,105,46,.22)}
+.pico{position:absolute;top:2rem;right:2rem;font-size:1.4rem;opacity:.2;transition:opacity .4s}
+.pcell:hover .pico{opacity:.4}
+.ptit{font-size:1.05rem;font-weight:600;color:var(--cream);margin-bottom:.65rem;line-height:1.3}
+.pdesc{font-size:.9rem;font-weight:300;color:var(--muted);line-height:1.8}
+
+/* SOLUCION */
+.solucion{background:var(--bg2)}
+.sol-inner{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;margin-top:4rem}
+.flist{display:flex;flex-direction:column}
+.feat{display:grid;grid-template-columns:32px 1fr;gap:1.5rem;align-items:start;padding:1.75rem 0;border-bottom:1px solid var(--bdr3);transition:padding-left .3s}
+.feat:first-child{border-top:1px solid var(--bdr3)}
+.feat:hover{padding-left:.5rem}
+.fnum{font-family:var(--ff);font-size:.85rem;color:var(--ember);opacity:.7;padding-top:.15rem}
+.ftit{font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:.35rem}
+.fdesc{font-size:.875rem;font-weight:300;color:var(--muted);line-height:1.7}
+
+/* DASHBOARD */
+.dash{background:var(--bg0);border:1px solid var(--bdr);border-radius:6px;overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,.3);position:sticky;top:7rem}
+.dbar{display:flex;align-items:center;gap:.5rem;padding:.9rem 1.2rem;background:var(--bg1);border-bottom:1px solid var(--bdr3)}
+.dd{width:10px;height:10px;border-radius:50%}
+.dd.r{background:#FF5F57}.dd.y{background:#FFBD2E}.dd.g{background:#28C840}
+.dtitle{margin-left:auto;font-size:.68rem;color:var(--muted);font-weight:300;letter-spacing:.08em}
+.dbody{padding:1.5rem}
+.dkpis{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
+.dkpi{background:var(--bg2);border:1px solid var(--bdr3);border-radius:4px;padding:1rem 1.1rem}
+.dkl{font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:.5rem}
+.dkv{font-family:var(--ff);font-size:1.8rem;font-weight:400}
+.dkv.ok{color:#6FCFA0}.dkv.w{color:var(--gold2)}.dkv.bad{color:#F07060}
+.dsl{font-size:.63rem;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:.75rem}
+.dishes{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.25rem}
+.drow{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-radius:3px;background:var(--bg2);transition:background .2s}
+.drow:hover{background:var(--bg3)}
+.dname{font-size:.78rem;font-weight:300;color:var(--muted)}
+.dpct{font-size:.78rem;font-weight:500;display:flex;align-items:center;gap:.5rem}
+.dbw{width:48px;height:3px;background:var(--bdr3);border-radius:2px;overflow:hidden}
+.db{height:100%;border-radius:2px;transition:width .8s ease}
+.dalert{padding:.9rem 1.1rem;border-left:2px solid var(--ember);background:rgba(212,105,46,.07);border-radius:0 3px 3px 0}
+.datl{font-size:.67rem;font-weight:600;color:var(--ember);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+.datt{font-size:.76rem;font-weight:300;color:var(--muted);line-height:1.5}
+
+/* METRICS */
+.metrics{background:var(--bg1);border-top:1px solid var(--bdr3);border-bottom:1px solid var(--bdr3)}
+.minner{display:grid;grid-template-columns:repeat(4,1fr)}
+.metric{padding:3.5rem 2rem;text-align:center;border-right:1px solid var(--bdr3);position:relative;overflow:hidden}
+.metric:last-child{border-right:none}
+.metric::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(212,152,46,.07) 0%,transparent 65%);opacity:0;transition:opacity .5s}
+.metric:hover::before{opacity:1}
+.mval{font-family:var(--ff);font-size:3.5rem;font-weight:700;color:var(--ember);line-height:1}
+.mlabel{font-size:.8rem;font-weight:300;color:var(--muted);margin-top:.5rem}
+
+/* PROCESO */
+.proceso{background:var(--bg0)}
+.psteps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:5rem;position:relative}
+.psteps::before{content:'';position:absolute;top:1.7rem;left:12.5%;right:12.5%;height:1px;background:linear-gradient(to right,var(--bdr3),var(--bdr),var(--bdr3))}
+.step{padding:0 2rem 0 0}
+.scirc{width:3.5rem;height:3.5rem;border-radius:50%;border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;margin-bottom:2rem;background:var(--bg0);position:relative;z-index:1;transition:border-color .4s,background .4s}
+.step:hover .scirc{border-color:var(--ember);background:rgba(212,105,46,.08)}
+.scnum{font-family:var(--ff);font-size:1rem;color:var(--ember)}
+.stept{font-size:1rem;font-weight:600;color:var(--cream);margin-bottom:.6rem}
+.stepd{font-size:.875rem;font-weight:300;color:var(--muted);line-height:1.7}
+
+/* TESTIMONIOS */
+.testimonios{background:var(--bg2)}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr3);margin-top:4rem;border:1px solid var(--bdr3)}
+.tcard{background:var(--bg2);padding:2.5rem;position:relative;overflow:hidden;transition:background .35s}
+.tcard:hover{background:var(--bg3)}
+.tcard::before{content:'\201C';font-family:var(--ff);font-size:7rem;color:var(--bdr3);position:absolute;top:-1.2rem;left:1.5rem;line-height:1;pointer-events:none;transition:color .4s}
+.tcard:hover::before{color:rgba(212,105,46,.08)}
+.ttext{font-size:.92rem;font-weight:300;color:var(--muted);line-height:1.9;margin-bottom:2rem;font-style:italic;position:relative;z-index:1}
+.tauthor{display:flex;align-items:center;gap:1rem}
+.tav{width:44px;height:44px;border-radius:50%;background:rgba(212,105,46,.12);border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-family:var(--ff);font-size:1rem;color:var(--ember);flex-shrink:0}
+.tname{font-size:.875rem;font-weight:600;color:var(--cream)}
+.trole{font-size:.73rem;font-weight:300;color:var(--muted)}
+
+/* CONTACT */
+.contact{background:var(--bg1);padding:8rem 5vw}
+.cinner{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start}
+.cbody{font-size:1rem;font-weight:300;color:var(--muted);line-height:1.9;margin-top:1.25rem;max-width:440px}
+.cperks{margin-top:2rem;display:flex;flex-direction:column;gap:.85rem}
+.cperk{display:flex;align-items:flex-start;gap:1rem;font-size:.9rem;font-weight:300;color:var(--muted)}
+.cpdot{width:20px;height:20px;border-radius:50%;background:rgba(212,105,46,.1);border:1px solid rgba(212,105,46,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.1rem}
+.cpdot::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--ember)}
+.cemail{margin-top:2rem;font-size:.9rem;color:var(--muted)}
+.cemail a{color:var(--gold);text-decoration:none;font-weight:500}
+.cemail a:hover{color:var(--gold2)}
+
+/* FORM */
+.fwrap{background:var(--bg2);border:1px solid var(--bdr2);border-radius:4px;padding:2.5rem}
+.fh{font-family:var(--ff);font-size:1.6rem;font-weight:500;color:var(--cream);margin-bottom:.35rem}
+.fsub{font-size:.85rem;font-weight:300;color:var(--muted);margin-bottom:2rem}
+.fg{margin-bottom:1.1rem}
+.fg label{display:block;font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:.4rem}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--bg1);border:1px solid var(--bdr3);border-radius:2px;padding:.85rem 1rem;font-family:var(--fb);font-size:.9rem;color:var(--cream);outline:none;transition:border-color .25s,background .25s;-webkit-appearance:none}
+.fg input::placeholder,.fg textarea::placeholder{color:var(--muted2)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--ember);background:rgba(212,105,46,.03)}
+.fg select option{background:var(--bg1);color:var(--cream)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* Phone */
+.phone-wrap{display:flex;gap:0}
+.phone-prefix{background:var(--bg1);border:1px solid var(--bdr3);border-right:none;border-radius:2px 0 0 2px;padding:.85rem .75rem;font-family:var(--fb);font-size:.85rem;color:var(--cream);outline:none;transition:border-color .25s;cursor:pointer;-webkit-appearance:none;min-width:110px}
+.phone-num{flex:1;background:var(--bg1);border:1px solid var(--bdr3);border-left:none;border-radius:0 2px 2px 0;padding:.85rem 1rem;font-family:var(--fb);font-size:.9rem;color:var(--cream);outline:none;transition:border-color .25s,background .25s}
+.phone-num::placeholder{color:var(--muted2)}
+.phone-wrap:focus-within .phone-prefix,.phone-wrap:focus-within .phone-num{border-color:var(--ember);background:rgba(212,105,46,.03)}
+
+.hpf{position:absolute;left:-9999px;opacity:0;pointer-events:none}
+.fbtn{width:100%;background:var(--ember);color:var(--cream);border:none;padding:1.1rem 2rem;font-family:var(--fb);font-size:.85rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border-radius:2px;cursor:pointer;margin-top:.5rem;position:relative;overflow:hidden;transition:background .3s,transform .2s}
+.fbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.07) 50%,transparent 70%);transform:translateX(-100%);transition:transform .5s}
+.fbtn:hover{background:var(--ember2);transform:translateY(-1px)}
+.fbtn:hover::after{transform:translateX(100%)}
+.fbtn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.fnote{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.75rem;opacity:.5}
+.ferr{background:rgba(212,105,46,.08);border:1px solid rgba(212,105,46,.2);border-radius:2px;padding:.75rem 1rem;font-size:.82rem;color:var(--ember);margin-top:.75rem;display:none}
+.ferr.show{display:block}
+.fok{display:none;text-align:center;padding:2.5rem 0}
+.fok.show{display:block}
+.focheck{width:60px;height:60px;border-radius:50%;background:rgba(111,207,160,.08);border:1px solid rgba(111,207,160,.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin:0 auto 1.25rem}
+.fotit{font-family:var(--ff);font-size:1.55rem;color:var(--cream);margin-bottom:.5rem}
+.fotxt{font-size:.9rem;font-weight:300;color:var(--muted);line-height:1.7}
+
+/* FAQ */
+.faq{background:var(--bg0);padding:8rem 5vw}
+.faqin{display:grid;grid-template-columns:5fr 7fr;gap:6rem;align-items:start}
+.fitem{border-bottom:1px solid var(--bdr3)}
+.fq{width:100%;background:none;border:none;text-align:left;padding:1.4rem 0;font-family:var(--fb);font-size:.95rem;font-weight:400;color:var(--muted);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;transition:color .2s}
+.fq:hover,.fq.open{color:var(--cream)}
+.ficon{width:22px;height:22px;border-radius:50%;border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.75rem;color:var(--ember);transition:transform .3s,border-color .2s}
+.fq.open .ficon{transform:rotate(45deg);border-color:var(--ember)}
+.fa{font-size:.9rem;font-weight:300;color:var(--muted);line-height:1.8;max-height:0;overflow:hidden;transition:max-height .4s ease,padding-bottom .3s}
+.fa.open{max-height:200px;padding-bottom:1.5rem}
+
+/* FOOTER */
+footer{background:var(--bg1);border-top:1px solid var(--bdr3);padding:2rem 5vw;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.flogo{font-family:var(--ff);font-size:1.3rem;color:var(--muted2)}
+.flogo span{color:var(--ember)}
+.fcopy{font-size:.72rem;color:var(--muted2);opacity:.5}
+.fmail{font-size:.78rem;color:var(--muted);text-decoration:none;transition:color .2s}
+.fmail:hover{color:var(--gold)}
+
+/* REVEALS */
+.rv{opacity:0;transform:translateY(32px);transition:opacity .75s ease,transform .75s ease}
+.rvl{opacity:0;transform:translateX(-28px);transition:opacity .75s ease,transform .75s ease}
+.rvs{opacity:0;transform:scale(.96);transition:opacity .65s ease,transform .65s ease}
+.rv.in,.rvl.in,.rvs.in{opacity:1;transform:none}
+[data-d="1"]{transition-delay:.1s}[data-d="2"]{transition-delay:.2s}[data-d="3"]{transition-delay:.3s}[data-d="4"]{transition-delay:.4s}
+
+@keyframes fup{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fin{from{opacity:0}to{opacity:1}}
+@keyframes fleft{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spulse{0%,100%{opacity:.4;transform:scaleY(1)}50%{opacity:1;transform:scaleY(.7)}}
+
+@media(max-width:1024px){.hfloat{display:none}.sol-inner{grid-template-columns:1fr}.dash{position:static}.cinner{grid-template-columns:1fr}.faqin{grid-template-columns:1fr}.psteps{grid-template-columns:1fr 1fr;gap:2rem}.psteps::before{display:none}.tgrid{grid-template-columns:1fr}}
+@media(max-width:768px){nav{padding:1rem 5vw}.nlinks{display:none}.htitle{font-size:2.8rem}.pgrid{grid-template-columns:1fr}.minner{grid-template-columns:1fr 1fr}.metric{border-right:none;border-bottom:1px solid var(--bdr3)}.frow{grid-template-columns:1fr}section{padding:5rem 5vw}}
+</style>
+</head>
+<body>
+<div id="cg"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nlogo">Kitch<span class="nlogo-dot">.</span></a>
+  <div class="nlinks">
+    <a href="#problema">El problema</a>
+    <a href="#solucion">La solución</a>
+    <a href="#proceso">Cómo funciona</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contacto" class="ncta">Demo gratis</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <canvas id="hcanvas"></canvas>
+  <div class="hvig"></div>
+  <div class="hgrain"></div>
+  <div class="hcontent">
+    <div class="htag">Para hosteleros que quieren trabajar mejor</div>
+    <h1 class="htitle">
+      Gestiona tu cocina<br>con la cabeza <em>despejada.</em>
+    </h1>
+    <p class="hpain">
+      Olvídate de los albaranes en papel, los escandallos desactualizados y las sorpresas a fin de mes.<br>
+      <strong>Kitch lo ordena todo por ti</strong> — para que puedas centrarte en lo que realmente importa: tu restaurante.
+    </p>
+    <div class="hactions">
+      <a href="#contacto" class="btnp">Quiero ver cómo funciona</a>
+      <a href="#problema" class="btng">¿Te suena? <span class="btng-arr">↓</span></a>
+    </div>
+    <div class="hproof">
+      <div class="hproof-item"><div class="hproof-dot"></div>Sin instalaciones</div>
+      <div class="hproof-div"></div>
+      <div class="hproof-item"><div class="hproof-dot"></div>Desde el móvil</div>
+      <div class="hproof-div"></div>
+      <div class="hproof-item"><div class="hproof-dot"></div>Demo gratuita sin compromiso</div>
+    </div>
+  </div>
+  <div class="hfloat">
+    <div class="hfi"><div class="hfv">–15%</div><div class="hfl">Menos costes operativos</div></div>
+    <div class="hfi"><div class="hfv">&lt;30s</div><div class="hfl">Para procesar un albarán</div></div>
+    <div class="hfi"><div class="hfv">0h</div><div class="hfl">De papeleo a la semana</div></div>
+  </div>
+  <div class="hscroll"><span>Sigue leyendo</span><div class="hscroll-line"></div></div>
+</section>
+
+<!-- PROBLEMA -->
+<section class="problema" id="problema">
+  <div class="rv">
+    <p class="slabel">La realidad del sector</p>
+    <h2 class="stitle">El papeleo se lleva lo mejor de tu <em>jornada.</em></h2>
+    <p class="sdesc">No porque seas desorganizado. Sino porque las herramientas que existen no están pensadas para la hostelería.</p>
+  </div>
+  <div class="pgrid rv" style="margin-top:4rem;transition-delay:.18s">
+    <div class="pcell">
+      <span class="pico">📋</span>
+      <div class="pnum">01</div>
+      <h3 class="ptit">Los escandallos se quedan obsoletos enseguida</h3>
+      <p class="pdesc">Los precios de los ingredientes cambian cada semana. Mantener los escandallos al día a mano es prácticamente imposible, y cuando no están actualizados, no puedes fiarte de ellos.</p>
+    </div>
+    <div class="pcell">
+      <span class="pico">⏱️</span>
+      <div class="pnum">02</div>
+      <h3 class="ptit">Los albaranes roban horas cada semana</h3>
+      <p class="pdesc">Revisar, introducir y archivar albaranes a mano consume entre 5 y 10 horas semanales. Horas que podrían ir al servicio, al equipo o simplemente a descansar.</p>
+    </div>
+    <div class="pcell">
+      <span class="pico">📊</span>
+      <div class="pnum">03</div>
+      <h3 class="ptit">Los datos de compras están dispersos por todas partes</h3>
+      <p class="pdesc">Un albarán en papel, otro por email, otro en WhatsApp. Sin un lugar centralizado, es imposible saber cómo evolucionan los precios ni comparar proveedores con criterio.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUCIÓN -->
+<section class="solucion" id="solucion">
+  <div class="rv">
+    <p class="slabel">Cómo te ayudamos</p>
+    <h2 class="stitle">Todo lo que necesitas <em>en orden,</em> sin esfuerzo extra.</h2>
+    <p class="sdesc">Kitch se encarga del trabajo administrativo para que tú puedas dedicar el tiempo a lo que sabes hacer.</p>
+  </div>
+  <div class="sol-inner">
+    <div class="flist rv" style="transition-delay:.15s">
+      <div class="feat">
+        <div class="fnum">01</div>
+        <div><h4 class="ftit">Sube el albarán — nosotros lo procesamos</h4><p class="fdesc">Foto desde el móvil o PDF desde el email. La IA extrae todos los datos automáticamente en segundos. Sin teclear nada, sin errores.</p></div>
+      </div>
+      <div class="feat">
+        <div class="fnum">02</div>
+        <div><h4 class="ftit">Los escandallos siempre al día, solos</h4><p class="fdesc">Cuando cambia el precio de un ingrediente, todos los platos que lo usan se actualizan al instante. Siempre sabes exactamente qué te cuesta cada plato.</p></div>
+      </div>
+      <div class="feat">
+        <div class="fnum">03</div>
+        <div><h4 class="ftit">Te avisamos antes de que sea un problema</h4><p class="fdesc">Si un plato empieza a tener menos margen del que quieres, recibes una alerta. Tienes tiempo de reaccionar con calma, no de correr a fin de mes.</p></div>
+      </div>
+      <div class="feat">
+        <div class="fnum">04</div>
+        <div><h4 class="ftit">Todo tu historial de compras en un lugar</h4><p class="fdesc">Precios por proveedor, evolución en el tiempo, comparativas. La información que necesitas para tomar mejores decisiones, siempre a mano.</p></div>
+      </div>
+    </div>
+    <div class="rvs" style="transition-delay:.3s">
+      <div class="dash">
+        <div class="dbar"><div class="dd r"></div><div class="dd y"></div><div class="dd g"></div><span class="dtitle">Kitch — Panel de control</span></div>
+        <div class="dbody">
+          <div class="dkpis">
+            <div class="dkpi"><div class="dkl">Food Cost hoy</div><div class="dkv w">31.4%</div></div>
+            <div class="dkpi"><div class="dkl">Margen neto</div><div class="dkv ok">68.6%</div></div>
+            <div class="dkpi"><div class="dkl">Albaranes hoy</div><div class="dkv">7</div></div>
+            <div class="dkpi"><div class="dkl">Alertas activas</div><div class="dkv bad">2</div></div>
+          </div>
+          <p class="dsl">Rentabilidad por plato</p>
+          <div class="dishes" id="dd">
+            <div class="drow"><span class="dname">Arroz meloso de bogavante</span><span class="dpct"><div class="dbw"><div class="db" style="width:74%;background:#6FCFA0"></div></div><span style="color:#6FCFA0">74.2%</span></span></div>
+            <div class="drow"><span class="dname">Croquetas de jamón ibérico</span><span class="dpct"><div class="dbw"><div class="db" style="width:71%;background:#6FCFA0"></div></div><span style="color:#6FCFA0">71.8%</span></span></div>
+            <div class="drow"><span class="dname">Solomillo con trufa negra</span><span class="dpct"><div class="dbw"><div class="db" style="width:65%;background:#E0A83A"></div></div><span style="color:#E0A83A">65.1%</span></span></div>
+            <div class="drow"><span class="dname">Ensalada de burrata</span><span class="dpct"><div class="dbw"><div class="db" style="width:58%;background:#F07060"></div></div><span style="color:#F07060">58.4%</span></span></div>
+          </div>
+          <div class="dalert"><div class="datl">⚠ Revisar margen</div><div class="datt">Ensalada de burrata por debajo del 70%. El AOVE ha subido un 18% esta semana.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<div class="metrics">
+  <div class="minner">
+    <div class="metric rv"><div class="mval">5–15%</div><div class="mlabel">Menos costes operativos</div></div>
+    <div class="metric rv" data-d="1"><div class="mval">&lt;30s</div><div class="mlabel">Para procesar un albarán</div></div>
+    <div class="metric rv" data-d="2"><div class="mval">100%</div><div class="mlabel">Escandallos siempre al día</div></div>
+    <div class="metric rv" data-d="3"><div class="mval">0€</div><div class="mlabel">Para empezar con la demo</div></div>
+  </div>
+</div>
+
+<!-- PROCESO -->
+<section class="proceso" id="proceso">
+  <div class="rv">
+    <p class="slabel">Cómo funciona</p>
+    <h2 class="stitle">Empiezas a tener todo <em>bajo control</em> en cuatro pasos.</h2>
+  </div>
+  <div class="psteps">
+    <div class="step rv" data-d="1"><div class="scirc"><span class="scnum">01</span></div><h3 class="stept">Foto o PDF</h3><p class="stepd">Cualquier albarán, de cualquier proveedor. Desde el móvil o el ordenador. Sin configuración previa.</p></div>
+    <div class="step rv" data-d="2"><div class="scirc"><span class="scnum">02</span></div><h3 class="stept">La IA extrae los datos</h3><p class="stepd">Precios, cantidades y productos identificados en menos de 30 segundos. Sin errores, sin teclear nada.</p></div>
+    <div class="step rv" data-d="3"><div class="scirc"><span class="scnum">03</span></div><h3 class="stept">Todo se actualiza solo</h3><p class="stepd">Los escandallos se recalculan automáticamente. El margen de cada plato, siempre correcto y sin trabajo extra.</p></div>
+    <div class="step rv" data-d="4"><div class="scirc"><span class="scnum">04</span></div><h3 class="stept">Tú decides con claridad</h3><p class="stepd">¿Ajusto el precio? ¿Cambio de proveedor? Tienes toda la información para decidir bien y con tranquilidad.</p></div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="testimonios" id="testimonios">
+  <div class="rv">
+    <p class="slabel">Lo que dicen</p>
+    <h2 class="stitle">Hosteleros que <em>recuperaron su tiempo</em> y su tranquilidad</h2>
+  </div>
+  <div class="tgrid rv" style="transition-delay:.18s">
+    <div class="tcard"><p class="ttext">Antes tardaba un día entero a fin de mes revisando facturas. Ahora lo tengo todo en tiempo real y sin esfuerzo. Es una de esas herramientas que te preguntas cómo vivías sin ella.</p><div class="tauthor"><div class="tav">CM</div><div><div class="tname">Carlos M.</div><div class="trole">Restaurante en Valencia · 2 locales</div></div></div></div>
+    <div class="tcard"><p class="ttext">Lo que más valoro es la tranquilidad. Antes nunca sabía si los precios de la carta estaban bien. Ahora tengo esa información siempre actualizada sin tener que hacer nada.</p><div class="tauthor"><div class="tav">LS</div><div><div class="tname">Laura S.</div><div class="trole">Gastrobar en Barcelona</div></div></div></div>
+    <div class="tcard"><p class="ttext">Llevaba años con los escandallos en un Excel que nadie tocaba. Ahora se actualizan solos y puedo tomar decisiones con criterio. El equipo también lo agradece.</p><div class="tauthor"><div class="tav">JR</div><div><div class="tname">Javier R.</div><div class="trole">Restaurante en Madrid · 80 cubiertos</div></div></div></div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="contact" id="contacto">
+  <div class="cinner">
+    <div class="rvl">
+      <p class="slabel">Hablamos</p>
+      <h2 class="stitle">30 minutos para ver si <em>Kitch encaja</em> en tu cocina</h2>
+      <p class="cbody">Te hacemos una demo con los datos de tu restaurante. Sin tecnicismos ni presiones. Nos lo cuentas, te lo enseñamos, y si te encaja, perfecto — y si no, también.</p>
+      <div class="cperks">
+        <div class="cperk"><div class="cpdot"></div>Demo gratuita y personalizada a tu negocio</div>
+        <div class="cperk"><div class="cpdot"></div>Te contactamos en menos de 24 horas</div>
+        <div class="cperk"><div class="cpdot"></div>Sin tarjeta de crédito ni letra pequeña</div>
+        <div class="cperk"><div class="cpdot"></div>Cancelas cuando quieras, sin explicaciones</div>
+      </div>
+      <div class="cemail">¿Prefieres escribirnos directamente? <a href="mailto:administracionkitch@gmail.com">administracionkitch@gmail.com</a></div>
+    </div>
+    <div class="rv" style="transition-delay:.2s">
+      <div class="fwrap">
+        <form id="lf" novalidate>
+          <div class="hpf" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"/></div>
+          <h3 class="fh">Quiero ver Kitch en acción</h3>
+          <p class="fsub">Rellena esto y te llamamos nosotros.</p>
+          <div class="frow">
+            <div class="fg"><label for="nombre">Tu nombre</label><input type="text" id="nombre" name="nombre" placeholder="Ana García" required autocomplete="given-name"/></div>
+            <div class="fg"><label for="rest">Restaurante</label><input type="text" id="rest" name="restaurante" placeholder="Casa Pepe" required/></div>
+          </div>
+          <div class="fg"><label for="email">Email</label><input type="email" id="email" name="email" placeholder="ana@casapepe.es" required autocomplete="email"/></div>
+          <div class="fg">
+            <label>Teléfono</label>
+            <div class="phone-wrap">
+              <select class="phone-prefix" id="prefix" name="prefix" aria-label="Prefijo de país">
+                <option value="+34" selected>🇪🇸 +34</option>
+                <option value="+376">🇦🇩 +376</option>
+                <option value="+54">🇦🇷 +54</option>
+                <option value="+591">🇧🇴 +591</option>
+                <option value="+55">🇧🇷 +55</option>
+                <option value="+56">🇨🇱 +56</option>
+                <option value="+57">🇨🇴 +57</option>
+                <option value="+506">🇨🇷 +506</option>
+                <option value="+53">🇨🇺 +53</option>
+                <option value="+593">🇪🇨 +593</option>
+                <option value="+33">🇫🇷 +33</option>
+                <option value="+502">🇬🇹 +502</option>
+                <option value="+504">🇭🇳 +504</option>
+                <option value="+39">🇮🇹 +39</option>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+505">🇳🇮 +505</option>
+                <option value="+507">🇵🇦 +507</option>
+                <option value="+595">🇵🇾 +595</option>
+                <option value="+51">🇵🇪 +51</option>
+                <option value="+351">🇵🇹 +351</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+598">🇺🇾 +598</option>
+                <option value="+58">🇻🇪 +58</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+49">🇩🇪 +49</option>
+              </select>
+              <input class="phone-num" type="tel" id="tel" name="telefono" placeholder="612 345 678" autocomplete="tel-national" inputmode="numeric"/>
+            </div>
+          </div>
+          <div class="fg">
+            <label for="alb">¿Cuántos albaranes gestionáis al mes?</label>
+            <select id="alb" name="albaranes" required>
+              <option value="" disabled selected>Selecciona una opción</option>
+              <option value="menos-20">Menos de 20</option>
+              <option value="20-50">Entre 20 y 50</option>
+              <option value="50-100">Entre 50 y 100</option>
+              <option value="mas-100">Más de 100</option>
+            </select>
+          </div>
+          <button type="submit" class="fbtn" id="sb">Quiero ver la demo →</button>
+          <p class="fnote">Sin tarjeta de crédito · Sin compromisos · Solo 30 minutos</p>
+          <div class="ferr" id="fe"></div>
+        </form>
+        <div class="fok" id="fo">
+          <div class="focheck">✓</div>
+          <h3 class="fotit">¡Perfecto, hablamos pronto!</h3>
+          <p class="fotxt">Te contactamos en menos de 24 horas para coordinar la demo.<br/><br/>Si tienes prisa, escríbenos directamente a <strong style="color:var(--ember)">administracionkitch@gmail.com</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="faqin">
+    <div class="rv">
+      <p class="slabel">Preguntas frecuentes</p>
+      <h2 class="stitle">Todo lo que sueles <em>preguntarnos</em></h2>
+    </div>
+    <div class="rv" style="transition-delay:.18s">
+      <div class="fitem"><button class="fq">¿Necesito saber de tecnología?<span class="ficon">+</span></button><div class="fa">Para nada. Si sabes hacer una foto con el móvil, sabes usar Kitch. Lo hemos diseñado para hosteleros, no para informáticos.</div></div>
+      <div class="fitem"><button class="fq">¿Funciona con cualquier proveedor?<span class="ficon">+</span></button><div class="fa">Sí. Reconocemos cualquier formato de albarán o factura. Y si hay alguno que no procesa bien, lo añadimos en días.</div></div>
+      <div class="fitem"><button class="fq">¿Cuánto tiempo lleva empezar a usarlo?<span class="ficon">+</span></button><div class="fa">La configuración inicial tarda entre 2 y 4 horas según el tamaño de tu carta. Te ayudamos nosotros en ese proceso. A partir de ahí, el sistema funciona solo.</div></div>
+      <div class="fitem"><button class="fq">¿Mis datos están seguros?<span class="ficon">+</span></button><div class="fa">Sí. Todo se guarda cifrado en servidores europeos y cumplimos con el RGPD. Tus datos son tuyos y puedes exportarlos o borrarlos cuando quieras.</div></div>
+      <div class="fitem"><button class="fq">¿Cuánto cuesta?<span class="ficon">+</span></button><div class="fa">Lo vemos en la demo, adaptado a tu negocio. Lo que sí te podemos decir es que la demo es completamente gratuita y sin compromiso.</div></div>
+      <div class="fitem"><button class="fq">¿Puedo cancelar cuando quiera?<span class="ficon">+</span></button><div class="fa">Sí, cuando quieras y sin explicaciones. Sin permanencias ni complicaciones.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="flogo">Kitch<span>.</span></span>
+  <a href="mailto:administracionkitch@gmail.com" class="fmail">administracionkitch@gmail.com</a>
+  <span class="fcopy">© 2025 Kitch · Todos los derechos reservados</span>
+</footer>
+
+<script>
+const SB='https://fpxpallfwoumnxcpxvkk.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZweHBhbGxmd291bW54Y3B4dmtrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MzMwMjcsImV4cCI6MjA4ODEwOTAyN30.HxjNod9QWOk52XYMPzyd7apzPuFuiEKlkNAdIZHBu0g';
+
+// Cursor
+const cg=document.getElementById('cg');
+document.addEventListener('mousemove',e=>{cg.style.left=e.clientX+'px';cg.style.top=e.clientY+'px'},{passive:true});
+
+// Nav
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('sc',scrollY>60),{passive:true});
+
+// Canvas
+(()=>{
+  const c=document.getElementById('hcanvas'),ctx=c.getContext('2d');
+  let W,H;
+  const resize=()=>{W=c.width=c.offsetWidth;H=c.height=c.offsetHeight};
+  resize();window.addEventListener('resize',resize);
+  const orbs=Array.from({length:40},()=>({x:Math.random()*1400,y:Math.random()*900,r:Math.random()*280+120,dx:(Math.random()-.5)*.18,dy:(Math.random()-.5)*.12,h:Math.random()>.5?22:38,s:Math.random()*35+50,a:Math.random()*.055+.018,ph:Math.random()*Math.PI*2}));
+  const dots=Array.from({length:90},()=>({x:Math.random()*1400,y:Math.random()*900,r:Math.random()*1.1+.2,sp:Math.random()*.22+.04,a:Math.random()*.16+.03}));
+  let t=0;
+  const draw=()=>{
+    ctx.clearRect(0,0,W,H);t+=.004;
+    orbs.forEach(p=>{
+      p.x+=p.dx;p.y+=p.dy;
+      if(p.x<-p.r)p.x=W+p.r;if(p.x>W+p.r)p.x=-p.r;
+      if(p.y<-p.r)p.y=H+p.r;if(p.y>H+p.r)p.y=-p.r;
+      const pulse=Math.sin(t+p.ph)*.25+.75;
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+      g.addColorStop(0,`hsla(${p.h},${p.s}%,48%,${p.a*pulse})`);
+      g.addColorStop(1,'transparent');
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+    });
+    dots.forEach(d=>{
+      d.y-=d.sp;if(d.y<-3)d.y=H+3;
+      ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(212,152,46,${d.a*(Math.sin(t*1.5+d.x*.01)*.3+.7)})`;ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  };draw();
+})();
+
+// Scroll reveal
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')}),{threshold:.1});
+document.querySelectorAll('.rv,.rvl,.rvs').forEach(el=>obs.observe(el));
+
+// FAQ
+document.querySelectorAll('.fq').forEach(b=>b.addEventListener('click',()=>{
+  const open=b.classList.contains('open');
+  document.querySelectorAll('.fq').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open')});
+  if(!open){b.classList.add('open');b.nextElementSibling.classList.add('open')}
+}));
+
+// Phone format
+document.getElementById('tel').addEventListener('input',function(){
+  let v=this.value.replace(/\D/g,'').substring(0,9);
+  if(v.length>6)v=v.slice(0,3)+' '+v.slice(3,6)+' '+v.slice(6);
+  else if(v.length>3)v=v.slice(0,3)+' '+v.slice(3);
+  this.value=v;
+});
+
+// Dashboard live
+const ddata=[{n:'Arroz meloso de bogavante',b:74.2},{n:'Croquetas de jamón ibérico',b:71.8},{n:'Solomillo con trufa negra',b:65.1},{n:'Ensalada de burrata',b:58.4}];
+setInterval(()=>{
+  const c=document.getElementById('dd');if(!c)return;
+  c.innerHTML=ddata.map(d=>{
+    const v=(d.b+(Math.random()-.5)*1.5).toFixed(1);
+    const col=+v>=70?'#6FCFA0':+v>=62?'#E0A83A':'#F07060';
+    return`<div class="drow"><span class="dname">${d.n}</span><span class="dpct"><div class="dbw"><div class="db" style="width:${v}%;background:${col}"></div></div><span style="color:${col}">${v}%</span></span></div>`;
+  }).join('');
+},3200);
+
+// Form → Supabase
+let last=0;
+document.getElementById('lf').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const f=e.target,btn=document.getElementById('sb'),err=document.getElementById('fe'),ok=document.getElementById('fo');
+  if(f.querySelector('[name="website"]').value)return;
+  if(Date.now()-last<60000){err.textContent='Por favor espera un momento antes de volver a enviar.';err.classList.add('show');return}
+  const n=f.querySelector('#nombre').value.trim(),r=f.querySelector('#rest').value.trim(),em=f.querySelector('#email').value.trim(),al=f.querySelector('#alb').value,prefix=f.querySelector('#prefix').value,tel=f.querySelector('#tel').value.trim();
+  if(!n||!r||!em||!al){err.textContent='Por favor rellena los campos obligatorios.';err.classList.add('show');return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){err.textContent='Por favor introduce un email válido.';err.classList.add('show');return}
+  err.classList.remove('show');btn.disabled=true;btn.textContent='Enviando...';
+  const clean=s=>s.replace(/<[^>]*>/g,'').substring(0,500);
+  try{
+    const res=await fetch(`${SB}/rest/v1/leads`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SK,'Authorization':`Bearer ${SK}`,'Prefer':'return=minimal'},body:JSON.stringify({nombre:clean(n),restaurante:clean(r),email:clean(em),telefono:tel?`${prefix} ${clean(tel)}`:'',albaranes_mes:al,source:'landing_web',created_at:new Date().toISOString()})});
+    if(!res.ok)throw new Error(res.status);
+    last=Date.now();f.style.display='none';ok.classList.add('show');
+  }catch(ex){
+    btn.disabled=false;btn.textContent='Quiero ver la demo →';
+    err.textContent='Ha habido un error al enviar. Por favor inténtalo de nuevo.';err.classList.add('show');
+  }
+});
+</script>
+</body>
+</html>
